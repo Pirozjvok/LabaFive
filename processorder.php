@@ -27,14 +27,24 @@
  define("zena4", 3100);
  $totalqty = $tovar1 + $tovar2 + $tovar3 + $tovar4;
  $totalamount = $tovar1 * zena1 + $tovar2 * zena2 + $tovar3 * zena3 + $tovar4 * zena4;
- $totalamount = number_format($totalamount, 2);
+
+ //Если сумма больше 1000 до скидка 5%
+
+
+
  echo "<br>\n";
  echo "Всего заказано: ".$totalqty."<br>\n";
- echo "На сумму: ".$totalamount."<br>\n";
+ echo "На сумму: ".number_format($totalamount, 2)."<br>\n";
  $taxrate = 0.10; // Налог с продаж 10%
  $totalamount = $totalamount * (1 + $taxrate);
- $totalamount = number_format($totalamount, 2);
- echo " С налогом с продаж: ".$totalamount."<br>\n";
+ $skidka = 0;
+ if ($totalamount >= 1000){
+    $skidka = $totalamount * 0.05;
+ }
+ echo " С налогом с продаж ".number_format($totalamount, 2)."<br>\n";
+ echo "Скидка: ".number_format($skidka, 2)."<br>\n";
+ $totalamount = $totalamount - $skidka;
+ echo " Итог ".number_format($totalamount, 2)."<br>\n";
 ?>
 </body>
 </html>
