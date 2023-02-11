@@ -6,6 +6,27 @@
 <h1> ЛАДА Автозапчасти </h1>
 <h2> РЕЗУЛЬТАТЫ ЗАКАЗА </h2>
 <?
+
+
+$dist_arr = array(
+    "уфа" => 0,
+    "стерлитамак" => 128,
+    "салават" => 162,
+    "ташкиново" => 206,
+    "нефтекамск" => 216,
+ );
+
+ $city = strtolower($_REQUEST["city"]);
+
+ if (array_key_exists($city, $dist_arr) == false)
+ {
+    echo "Извените, но мы не можем доставить заказ в ваш город";
+    die();
+ }
+ 
+ $dist = $dist_arr[$city];
+
+ 
  $tovar1=$_REQUEST["tovar1"];
  $tovar2=$_REQUEST["tovar2"];
  $tovar3=$_REQUEST["tovar3"];
@@ -43,8 +64,32 @@
  }
  echo " С налогом с продаж ".number_format($totalamount, 2)."<br>\n";
  echo "Скидка: ".number_format($skidka, 2)."<br>\n";
- $totalamount = $totalamount - $skidka;
+
+ $delivery = floor($dist / 50) * 100;
+ $totalamount = $totalamount - $skidka + $delivery;
+ echo " Доставка: ".$delivery."<br>\n";
  echo " Итог ".number_format($totalamount, 2)."<br>\n";
+
+switch($_REQUEST["find"]) {
+ case "a" :
+ echo "<P>Регулярный покупатель.";
+ break;
+ case "b" :
+ echo "<P>Покупатель увидел рекламу о нас в интернете.";
+ break;
+ case "c" :
+ echo "<P> Покупатель нашел нас по телефонному справочнику.";
+ break;
+ case "d" :
+ echo "<P>Покупатель узнал о нас от знакомых.";
+ break;
+ case "d" :
+    echo "<P>Покупатель узнал о нас из обьявления на столбе.";
+    break;
+ default :
+ echo "<P>Мы на знаем как нашел нас покупатель.";
+ break; }
+
 ?>
 </body>
 </html>
