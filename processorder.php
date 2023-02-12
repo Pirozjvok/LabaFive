@@ -31,15 +31,6 @@ $dist_arr = array(
  $tovar2=$_REQUEST["tovar2"];
  $tovar3=$_REQUEST["tovar3"];
  $tovar4=$_REQUEST["tovar4"];
- echo "<p>Заказ обработан ";
- echo date("H:i, jS F");
- echo "<br>";
- echo "<p>Ваш заказ составил:";
- echo "<br>";
- echo $tovar1."x Ремень ГРМ<br>";
- echo $tovar2."x Датчик положения коленвала<br>";
- echo $tovar3."x Блок АБС<br>";
- echo $tovar4."x ФАРА<br>";
  $totalqty = 0;
  $totalamount = 0.00;
  define("zena1", 827);
@@ -47,15 +38,34 @@ $dist_arr = array(
  define("zena3", 16000);
  define("zena4", 3100);
  $totalqty = $tovar1 + $tovar2 + $tovar3 + $tovar4;
+
+if( $totalqty == 0 ) {
+    echo "Вы ничего не выбрали в заказе!<br>";
+    exit;
+}
+
+$date=date("H:i, jS F");
+
+echo "<p>Заказ обработан ";
+echo $date;
+echo "<br>";
+echo "<p>Ваш заказ составил:";
+echo "<br>";
+echo $tovar1."x Ремень ГРМ<br>";
+echo $tovar2."x Датчик положения коленвала<br>";
+echo $tovar3."x Блок АБС<br>";
+echo $tovar4."x ФАРА<br>";
+
  $totalamount = $tovar1 * zena1 + $tovar2 * zena2 + $tovar3 * zena3 + $tovar4 * zena4;
 
  //Если сумма больше 1000 до скидка 5%
 
-
+$address = $_REQUEST["city"] . ", " . $_REQUEST["house"];
 
  echo "<br>\n";
  echo "Всего заказано: ".$totalqty."<br>\n";
  echo "На сумму: ".number_format($totalamount, 2)."<br>\n";
+ echo "<P>Адрес доставки ".$address."<br>\n";
  $taxrate = 0.10; // Налог с продаж 10%
  $totalamount = $totalamount * (1 + $taxrate);
  $skidka = 0;
@@ -90,6 +100,21 @@ switch($_REQUEST["find"]) {
  echo "<P>Мы на знаем как нашел нас покупатель.";
  break; }
 
+ $outputstring = $date."\t".$tovar1."x Ремень ГРМ\t".$tovar2."x Датчик положения " .
+ "коленвала\t"
+  .$tovar3."x Блок АБС\t".$tovar4 ."x ФАРА\t Итог:" . $totalamount . "\t". $address ."\n";
+
+ @$fp = fopen("orders.txt", "a");
+ flock($fp, 2);
+ if (!$fp) {
+ echo "<p><strong> Заказ не может быть записан сейчас. "
+ ."Пожалуйста, попробуйте еще раз
+позже.</strong></p></body></html>";
+ exit;
+ }
+ fwrite($fp, $outputstring);
+ flock($fp, 3);
+ fclose($fp);
 ?>
 </body>
 </html>
