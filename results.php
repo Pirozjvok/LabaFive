@@ -1,5 +1,9 @@
 <?php
+require_once 'boot.php';
 header('Content-Type:text/html;charset=UTF-8');
+if (isset($_SESSION["order_info"])){
+    unset($_SESSION["order_info"]);
+ }
 ?>
 <html><head>
  <title> ЛАДА Автозапчасти – Результат поиска </title>
@@ -33,6 +37,12 @@ header('Content-Type:text/html;charset=UTF-8');
  echo stripslashes($row[2]);
  echo "<br>Цена: ";
  echo stripslashes($row[3]);
+ echo "<br><form action=\"/buy.php\" method=\"post\">
+ <input type=\"text\" name=\"count\" value=\"0\">
+ <input type=\"hidden\" name=\"item\" value=\"". $row[0] ."\">
+ <input type=\"hidden\" name=\"from\" value=\"search\">
+ <input type=\"submit\" value=\"Заказать\">
+ </form>";
  echo "</p>";
  }
 ?>

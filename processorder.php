@@ -1,32 +1,101 @@
+<?php
+header('Content-Type:text/html;charset=UTF-8');
+require_once 'boot.php';
+if (check_auth()) {
+   // РџРѕР»СѓС‡РёРј РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ СЃРѕС…СЂР°РЅС‘РЅРЅРѕРјСѓ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
+   if (!array_key_exists("order_info", $_SESSION)){
+      $_SESSION["order_info"] = $_POST;
+   }
+}
+else{
+   flash("Р”Р»СЏ Р·Р°РєР°Р·Р° РЅСѓР¶РЅРѕ Р°РІС‚РѕСЂРёР·РѕРІР°С‚СЊСЃСЏ. (Р”Р°РЅРЅС‹Рµ Рѕ Р·Р°РєР°Р·Рµ СЃРѕС…СЂР°РЅРµРЅС‹)");
+   header('Location: /login.php');
+   $_SESSION["order_info"] = $_POST;
+}
+?>
+
+
+
 <html>
 <head>
- <title>ЛАДА Автозапчасти – Результаты заказа</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+ <title>Р›РђР”Рђ РђРІС‚РѕР·Р°РїС‡Р°СЃС‚Рё вЂ“ Р РµР·СѓР»СЊС‚Р°С‚С‹ Р·Р°РєР°Р·Р°</title>
 </head>
 <body>
-<h1> ЛАДА Автозапчасти </h1>
-<h2> РЕЗУЛЬТАТЫ ЗАКАЗА </h2>
+<h1> Р›РђР”Рђ РђРІС‚РѕР·Р°РїС‡Р°СЃС‚Рё </h1>
+<h2> Р Р•Р—РЈР›Р¬РўРђРўР« Р—РђРљРђР—Рђ </h2>
 <?
+$order =   $_SESSION["order_info"];
+$user_id = $_SESSION['user_id'];
 
+$db = dbc();
+if (!$db) {
+    echo " РћС€РёР±РєР°: РќРµ РјРѕРіСѓ СЃРѕРµРґРёРЅРёС‚СЃСЏ СЃ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С…. РџРѕР¶Р°Р»СѓР№СЃС‚Р°,
+   РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰Рµ СЂР°Р· РїРѕР·Р¶Рµ.";
+    exit;
+}
+mysql_select_db("automaster");
+$query = "select * from customers where customerid = ".$user_id;
+$result = mysql_query($query);
+$row = mysql_fetch_array($result);
+$user_name = $row[1];
+$user_address = $row[2];
+$user_city = $row[3];
 
 $dist_arr = array(
-    "уфа" => 0,
-    "стерлитамак" => 128,
-    "салават" => 162,
-    "ташкиново" => 206,
-    "нефтекамск" => 216,
+    "СѓС„Р°" => 0,
+    "СЃС‚РµСЂР»РёС‚Р°РјР°Рє" => 128,
+    "СЃР°Р»Р°РІР°С‚" => 162,
+    "С‚Р°С€РєРёРЅРѕРІРѕ" => 206,
+    "РЅРµС„С‚РµРєР°РјСЃРє" => 216,
  );
 
- $city = strtolower($_REQUEST["city"]);
+ $city = strtolower($user_city);
 
  if (array_key_exists($city, $dist_arr) == false)
  {
-    echo "<p>Извините, но мы не можем доставить заказ в ваш город";
+    echo "<p>РР·РІРёРЅРёС‚Рµ, РЅРѕ РјС‹ РЅРµ РјРѕР¶РµРј РґРѕСЃС‚Р°РІРёС‚СЊ Р·Р°РєР°Р· РІ РІР°С€ РіРѕСЂРѕРґ";
     die();
  }
  
  $dist = $dist_arr[$city];
 
+
+ $items = array();
+ $items_list = array();
+
+$query = "select * from items";
+$result = mysql_query($query);
+$num_results = mysql_num_rows($result);
+for ($i = 0; $i < $num_results; $i++)
+{
+    $row = mysql_fetch_array($result);
+    $items_info = array(
+      "id" => $row[0],
+      "name" => $row[1],
+      "desc" => $row[2],
+      "price" => $row[3]
+    );
+    $items_list[$i] = $items_info;
+}
+
+ foreach ($order as $k => $v) {
+   if (substr( $k, 0, 4 ) === "item"){
+      if (intval($v) > 0)
+         $items[intval(substr( $k, 4))] = intval($v);
+   }
+ }
  
+ 
+ $mysql_date = date("Y-m-d H:i:s");
+ foreach ($items as $k => $v) {
+   $query = "insert into orders values (0, $user_id, $amount, $mysql_date, $k, $v)";
+   $result = mysql_query($query);
+   $row = mysql_fetch_array($result);
+ }
+ 
+
+  
  $tovar1=$_REQUEST["tovar1"];
  $tovar2=$_REQUEST["tovar2"];
  $tovar3=$_REQUEST["tovar3"];
@@ -40,76 +109,76 @@ $dist_arr = array(
  $totalqty = $tovar1 + $tovar2 + $tovar3 + $tovar4;
 
 if( $totalqty == 0 ) {
-    echo "Вы ничего не выбрали в заказе!<br>";
+    echo "Р’С‹ РЅРёС‡РµРіРѕ РЅРµ РІС‹Р±СЂР°Р»Рё РІ Р·Р°РєР°Р·Рµ!<br>";
     exit;
 }
 
 $date=date("H:i, jS F");
 
-echo "<p>Заказ обработан ";
+echo "<p>Р—Р°РєР°Р· РѕР±СЂР°Р±РѕС‚Р°РЅ ";
 echo $date;
 echo "<br>";
-echo "<p>Ваш заказ составил:";
+echo "<p>Р’Р°С€ Р·Р°РєР°Р· СЃРѕСЃС‚Р°РІРёР»:";
 echo "<br>";
-echo $tovar1."x Ремень ГРМ<br>";
-echo $tovar2."x Датчик положения коленвала<br>";
-echo $tovar3."x Блок АБС<br>";
-echo $tovar4."x ФАРА<br>";
+echo $tovar1."x Р РµРјРµРЅСЊ Р“Р Рњ<br>";
+echo $tovar2."x Р”Р°С‚С‡РёРє РїРѕР»РѕР¶РµРЅРёСЏ РєРѕР»РµРЅРІР°Р»Р°<br>";
+echo $tovar3."x Р‘Р»РѕРє РђР‘РЎ<br>";
+echo $tovar4."x Р¤РђР Рђ<br>";
 
  $totalamount = $tovar1 * zena1 + $tovar2 * zena2 + $tovar3 * zena3 + $tovar4 * zena4;
 
- //Если сумма больше 1000 до скидка 5%
+ //Р•СЃР»Рё СЃСѓРјРјР° Р±РѕР»СЊС€Рµ 1000 РґРѕ СЃРєРёРґРєР° 5%
 
 $address = $_REQUEST["city"] . ", " . $_REQUEST["house"];
 
  echo "<br>\n";
- echo "Всего заказано: ".$totalqty."<br>\n";
- echo "На сумму: ".number_format($totalamount, 2)."<br>\n";
- echo "<P>Адрес доставки ".$address."<br>\n";
- $taxrate = 0.10; // Налог с продаж 10%
+ echo "Р’СЃРµРіРѕ Р·Р°РєР°Р·Р°РЅРѕ: ".$totalqty."<br>\n";
+ echo "РќР° СЃСѓРјРјСѓ: ".number_format($totalamount, 2)."<br>\n";
+ echo "<P>РђРґСЂРµСЃ РґРѕСЃС‚Р°РІРєРё ".$address."<br>\n";
+ $taxrate = 0.10; // РќР°Р»РѕРі СЃ РїСЂРѕРґР°Р¶ 10%
  $totalamount = $totalamount * (1 + $taxrate);
  $skidka = 0;
  if ($totalamount >= 1000){
     $skidka = $totalamount * 0.05;
  }
- echo " С налогом с продаж ".number_format($totalamount, 2)."<br>\n";
- echo "Скидка: ".number_format($skidka, 2)."<br>\n";
+ echo " РЎ РЅР°Р»РѕРіРѕРј СЃ РїСЂРѕРґР°Р¶ ".number_format($totalamount, 2)."<br>\n";
+ echo "РЎРєРёРґРєР°: ".number_format($skidka, 2)."<br>\n";
 
  $delivery = floor($dist / 50) * 100;
  $totalamount = $totalamount - $skidka + $delivery;
- echo " Доставка: ".$delivery."<br>\n";
- echo " Итог ".number_format($totalamount, 2)."<br>\n";
+ echo " Р”РѕСЃС‚Р°РІРєР°: ".$delivery."<br>\n";
+ echo " РС‚РѕРі ".number_format($totalamount, 2)."<br>\n";
 
 switch($_REQUEST["find"]) {
  case "a" :
- echo "<P>Регулярный покупатель.";
+ echo "<P>Р РµРіСѓР»СЏСЂРЅС‹Р№ РїРѕРєСѓРїР°С‚РµР»СЊ.";
  break;
  case "b" :
- echo "<P>Покупатель увидел рекламу о нас в интернете.";
+ echo "<P>РџРѕРєСѓРїР°С‚РµР»СЊ СѓРІРёРґРµР» СЂРµРєР»Р°РјСѓ Рѕ РЅР°СЃ РІ РёРЅС‚РµСЂРЅРµС‚Рµ.";
  break;
  case "c" :
- echo "<P> Покупатель нашел нас по телефонному справочнику.";
+ echo "<P> РџРѕРєСѓРїР°С‚РµР»СЊ РЅР°С€РµР» РЅР°СЃ РїРѕ С‚РµР»РµС„РѕРЅРЅРѕРјСѓ СЃРїСЂР°РІРѕС‡РЅРёРєСѓ.";
  break;
  case "d" :
- echo "<P>Покупатель узнал о нас от знакомых.";
+ echo "<P>РџРѕРєСѓРїР°С‚РµР»СЊ СѓР·РЅР°Р» Рѕ РЅР°СЃ РѕС‚ Р·РЅР°РєРѕРјС‹С….";
  break;
  case "d" :
-    echo "<P>Покупатель узнал о нас из обьявления на столбе.";
+    echo "<P>РџРѕРєСѓРїР°С‚РµР»СЊ СѓР·РЅР°Р» Рѕ РЅР°СЃ РёР· РѕР±СЊСЏРІР»РµРЅРёСЏ РЅР° СЃС‚РѕР»Р±Рµ.";
     break;
  default :
- echo "<P>Мы на знаем как нашел нас покупатель.";
+ echo "<P>РњС‹ РЅР° Р·РЅР°РµРј РєР°Рє РЅР°С€РµР» РЅР°СЃ РїРѕРєСѓРїР°С‚РµР»СЊ.";
  break; }
 
- $outputstring = $date."\t".$tovar1."x Ремень ГРМ\t".$tovar2."x Датчик положения " .
- "коленвала\t"
-  .$tovar3."x Блок АБС\t".$tovar4 ."x ФАРА\t Итог:" . $totalamount . "\t". $address ."\n";
+ $outputstring = $date."\t".$tovar1."x Р РµРјРµРЅСЊ Р“Р Рњ\t".$tovar2."x Р”Р°С‚С‡РёРє РїРѕР»РѕР¶РµРЅРёСЏ " .
+ "РєРѕР»РµРЅРІР°Р»Р°\t"
+  .$tovar3."x Р‘Р»РѕРє РђР‘РЎ\t".$tovar4 ."x Р¤РђР Рђ\t РС‚РѕРі:" . $totalamount . "\t". $address ."\n";
 
  @$fp = fopen("orders.txt", "a");
  flock($fp, 2);
  if (!$fp) {
- echo "<p><strong> Заказ не может быть записан сейчас. "
- ."Пожалуйста, попробуйте еще раз
-позже.</strong></p></body></html>";
+ echo "<p><strong> Р—Р°РєР°Р· РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ Р·Р°РїРёСЃР°РЅ СЃРµР№С‡Р°СЃ. "
+ ."РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰Рµ СЂР°Р·
+РїРѕР·Р¶Рµ.</strong></p></body></html>";
  exit;
  }
  fwrite($fp, $outputstring);

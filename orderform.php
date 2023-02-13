@@ -1,70 +1,88 @@
+<?php
+header('Content-Type:text/html;charset=UTF-8');
+require_once 'boot.php';
+if (array_key_exists("order_info", $_SESSION)){
+    unset($_SESSION["order_info"]);
+ }
+?>
 <html>
 <head>
- <title>ЛАДА Автозапчасти</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+ <title>Р›РђР”Рђ РђРІС‚РѕР·Р°РїС‡Р°СЃС‚Рё</title>
 </head>
 <body>
-<h1> ЛАДА Автозапчасти </h1>
-<h2>Форма заказа</h2>
+<h1> Р›РђР”Рђ РђРІС‚РѕР·Р°РїС‡Р°СЃС‚Рё </h1>
+<h2>Р¤РѕСЂРјР° Р·Р°РєР°Р·Р°</h2>
 <form action="processorder.php" method=post>
 <table style="border: 0px">
 <tr bgcolor="#cccccc">
- <td width=150>Название</td>
- <td width=15>Количество</td>
+ <td width=150>РќР°Р·РІР°РЅРёРµ</td>
+ <td width=15>РљРѕР»РёС‡РµСЃС‚РІРѕ</td>
+ <td width=7>Р¦РµРЅР°</td>
+ <td >РћРїРёСЃР°РЅРёРµ</td>
 </tr>
+<?php 
+
+$db = dbc();
+if (!$db) {
+    echo " РћС€РёР±РєР°: РќРµ РјРѕРіСѓ СЃРѕРµРґРёРЅРёС‚СЃСЏ СЃ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С…. РџРѕР¶Р°Р»СѓР№СЃС‚Р°,
+   РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰Рµ СЂР°Р· РїРѕР·Р¶Рµ.";
+    exit;
+}
+mysql_select_db("automaster");
+$query = "select * from items";
+$result = mysql_query($query);
+$num_results = mysql_num_rows($result);
+for ($i = 0; $i < $num_results; $i++)
+{
+    $row = mysql_fetch_array($result);
+    $item_id = $row[0];
+    $item_name = $row[1];
+    $item_desc = $row[2];
+    $item_price = $row[3];
+    echo "<tr>
+<td>". $item_name ."</td>
+<td><input type=\"text\" name=\"item". $item_id ."\" size=3
+maxlength=3 value=\"0\"></td>
+<td>". $item_price ."</td>
+<td>". $item_desc ."</td>
+</tr>";
+}
+?>
+
 <tr>
- <td> Ремень ГРМ</td>
- <td align="center"><input type="text" name="tovar1" size=3
-maxlength=3 value="0"></td>
-</tr>
-<tr>
- <td> Датчик положения коленвала</td>
- <td align="center"><input type="text" name="tovar2" size=3
-maxlength=3 value="0"></td>
-</tr>
-<tr>
- <td> Блок АБС  </td>
- <td align="center"><input type="text" name="tovar3" size=3
-maxlength=3 value="0"></td>
-</tr>
-<tr>
-<tr>
- <td> ФАРА  </td>
- <td align="center"><input type="text" name="tovar4" size=3
-maxlength=3 value="0"></td>
-</tr>
-<tr>
- <td> Город  </td>
+ <td> Р“РѕСЂРѕРґ  </td>
  <td align="center"><input type="text" name="city" size=8
-value="Уфа"></td>
+value="РЈС„Р°"></td>
 </tr>
 <tr>
- <td> Улица, дом, подъезд, квартира </td>
+ <td> РЈР»РёС†Р°, РґРѕРј, РїРѕРґСЉРµР·Рґ, РєРІР°СЂС‚РёСЂР° </td>
  <td align="center"><input type="text" name="house" size=20></td>
 </tr>
-<tr><td>Как вы нас нашли</td>
+<tr><td>РљР°Рє РІС‹ РЅР°СЃ РЅР°С€Р»Рё</td>
  <td><select name="find">
- <option value = "a">Я регулярный покупатель
- <option value = "b">По рекламе из интернета
- <option value = "c">По телефонному справочнику
- <option value = "d">Знакомые рассказали
- <option value = "e">По объявлению на столбе
+ <option value = "a">РЇ СЂРµРіСѓР»СЏСЂРЅС‹Р№ РїРѕРєСѓРїР°С‚РµР»СЊ
+ <option value = "b">РџРѕ СЂРµРєР»Р°РјРµ РёР· РёРЅС‚РµСЂРЅРµС‚Р°
+ <option value = "c">РџРѕ С‚РµР»РµС„РѕРЅРЅРѕРјСѓ СЃРїСЂР°РІРѕС‡РЅРёРєСѓ
+ <option value = "d">Р—РЅР°РєРѕРјС‹Рµ СЂР°СЃСЃРєР°Р·Р°Р»Рё
+ <option value = "e">РџРѕ РѕР±СЉСЏРІР»РµРЅРёСЋ РЅР° СЃС‚РѕР»Р±Рµ
  </select>
  </td></tr>
 <tr>
- <td colspan=2 align="center"><input type=submit value="Отправить
-заказ"></td>
+ <td colspan=2 align="center"><input type=submit value="РћС‚РїСЂР°РІРёС‚СЊ
+Р·Р°РєР°Р·"></td>
 </tr>
 <tr>
 <td colspan=2 align="center">
 <input type=reset
- value = Cбpoc >
+ value = CР±poc >
 </td>
 </tr>
 </table>
 <table border = 0 cellpadding = 3>
 <tr>
-<td bgcolor = "#CCCCCC" align = center>Расстояние</td>
- <td bgcolor = "#CCCCCC" align = center>Стоимость</td>
+<td bgcolor = "#CCCCCC" align = center>Р Р°СЃСЃС‚РѕСЏРЅРёРµ</td>
+ <td bgcolor = "#CCCCCC" align = center>РЎС‚РѕРёРјРѕСЃС‚СЊ</td>
 </tr>
 <?
 $distance = 50;
